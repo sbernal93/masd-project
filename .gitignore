@@ -42,6 +42,11 @@ Thumbs.db
 .classpath
 .metadata
 target/
+*.settings/
+*.project
+*.classpath
+*.metadata
+*target/
 
 # Intellij #
 ##########

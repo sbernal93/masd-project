@@ -6,7 +6,7 @@
   
   	<properties>
 		<!-- Specify desired Jadex version here. -->
-		<jadex.version>3.0.115</jadex.version>
+		<jadex.version>4.0.164</jadex.version>
 	</properties>
 	
 	<!-- Additional repositories (only required when using nightlies and/or pro version of Jadex). -->
@@ -40,6 +40,16 @@
 				</excludes>
 			</resource>
 		</resources>
+		 <plugins>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.1</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+        </plugins>
 	</build>
   
   	<dependencies>
@@ -71,4 +81,5 @@
 		</dependency>
 		-->
 	</dependencies>
+
 </project>
