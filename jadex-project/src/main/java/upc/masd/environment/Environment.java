@@ -5,9 +5,10 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.geom.Point2D;
 import java.io.Closeable;
-import java.io.IOException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
@@ -16,14 +17,14 @@ import javax.swing.SwingUtilities;
 
 import jadex.bridge.IExternalAccess;
 import jadex.bridge.IInternalAccess;
-import jadex.bridge.component.IExecutionFeature;
 import jadex.bridge.component.impl.IInternalExecutionFeature;
 import jadex.commons.future.Future;
 import jadex.commons.future.IFuture;
 import jadex.commons.gui.SGUI;
+import upc.masd.AgentTypes;
 
 /**
- * Created on: May 28, 2019
+ * Created on: May 26, 2019
  * @author santiagobernal
  */
 public class Environment implements Closeable{
@@ -40,7 +41,7 @@ public class Environment implements Closeable{
     /** The treasures. */
     protected Set<Resource> resources;
     
-    /** The collected treasures (just for painting). */
+    /** The collected resources (used by the agent). */
     protected Set<Resource> collected;
     
     //protected Resource carrying;
@@ -51,9 +52,11 @@ public class Environment implements Closeable{
     protected Random    rnd;
     
     /** The agent location. */
-    protected Point2D.Double    agentLocation;
+    //protected Point2D.Double    agentLocation;
     
-    /** The agent location. */
+    protected Map<AgentTypes, Point2D.Double> agentsLocation;
+    
+    /** The base location. */
     protected Point2D.Double    baseLocation;
     
     /** The gui. */
@@ -66,7 +69,7 @@ public class Environment implements Closeable{
      */
     public Set<Resource>    getResources()
     {
-        // Return a copy to prevent manipulation of treasure set from agent and also avoid ConcurrentModificationException.
+        // Return a copy to prevent manipulation of resources set from agent and also avoid ConcurrentModificationException.
         synchronized(resources)
         {
             return new LinkedHashSet<Resource>(resources);
@@ -75,7 +78,7 @@ public class Environment implements Closeable{
     
     public Set<Resource>    getCollectedResources()
     {
-        // Return a copy to prevent manipulation of treasure set from agent and also avoid ConcurrentModificationException.
+        // Return a copy to prevent manipulation of resources set from agent and also avoid ConcurrentModificationException.
         synchronized(collected)
         {
             return new LinkedHashSet<Resource>(collected);
@@ -84,10 +87,10 @@ public class Environment implements Closeable{
     /**
      *  Get the treasure hunter location.
      */
-    public Point2D  getAgentLocation()
+    public Point2D  getAgentLocation(AgentTypes type)
     {
         // Return copy to prevent manipulation of original location from agent. 
-        return new Point2D.Double(agentLocation.getX(), agentLocation.getY());
+        return new Point2D.Double(agentsLocation.get(type).getX(), agentsLocation.get(type).getY());
     }
     
     /**
@@ -99,7 +102,7 @@ public class Environment implements Closeable{
         return new Point2D.Double(baseLocation.getX(), baseLocation.getY());
     }
     /**
-     *  Create a treasure hunter world of given size.
+     *  Create a the world of given size.
      *  @param width    The width (in pixels).
      *  @param height   The height (in pixels).
      */
@@ -107,7 +110,9 @@ public class Environment implements Closeable{
     {
         this.rnd    = new Random(1);
         this.baseLocation   = new Point2D.Double(rnd.nextDouble()*WIDTH, rnd.nextDouble()*HEIGHT);
-        this.agentLocation   = new Point2D.Double(baseLocation.getX(), baseLocation.getY());
+        this.agentsLocation = new HashMap<>();
+        this.agentsLocation.put(AgentTypes.GATHERER, new Point2D.Double(baseLocation.getX(), baseLocation.getY()));
+        this.agentsLocation.put(AgentTypes.SPY, new Point2D.Double(baseLocation.getX(), baseLocation.getY()));
         this.resources  = Collections.synchronizedSet(new LinkedHashSet<Resource>());
         this.collected    = Collections.synchronizedSet(new LinkedHashSet<Resource>());
         for(int i=1; i<=10; i++)
@@ -154,64 +159,32 @@ public class Environment implements Closeable{
     
     //-------- environment access methods --------
 
-    
     /**
-     *  Try to move a given distance.
-     *  Due to slip or terrain properties the end location might differ from the desired location.
-     *  
-     *  @param dx   The intended horizontal movement, i.e. delta-x.
-     *  @param dy   The intended vertical movement, i.e. delta-y.
-     *  @return A future that is finished, when the movement operation is completed.
+     * Moves the agent to a position
+     * @param dx the new x location
+     * @param dy the new y location 
+     * @return a future that is finished when the location is updated and the environment changed
      */
-    public IFuture<Void>    move(double dx, double dy)
-    {
-        // Use smooth transition using clock service, if possible
-        IInternalAccess comp    = IInternalExecutionFeature.LOCAL.get();
-        if(comp!=null)
-        {
-            // Use 10ms per step and move 0.002 per step -> distance 0.2 per second
-            double  dist    = Math.sqrt(dx*dx+dy*dy);
-            int steps   = Math.max(1, (int)(dist*500)); // if too close do a step anyways.
-            for(int i=0; i<steps; i++)
-            {
-                comp.getFeature(IExecutionFeature.class).waitForDelay(10).get();
-                this.agentLocation.x += dx/steps;
-                this.agentLocation.y += dy/steps;
-                
-                panel.environmentChanged();             
-            }
-        }
-        else
-        {
-            this.agentLocation.x += dx;
-            this.agentLocation.y += dy;
-            
-            panel.environmentChanged();
-        }
-        
-        return IFuture.DONE;
-    }
-    
-    public IFuture<Void> moveAgent(double dx, double dy) {
+    public IFuture<Void> moveAgent(double dx, double dy, AgentTypes type) {
         //System.out.println("new locations: " + dx + ", " + dy);
-        this.agentLocation.x = dx;
-        this.agentLocation.y = dy;
+        this.agentsLocation.get(type).x = dx;
+        this.agentsLocation.get(type).y = dy;
         panel.environmentChanged();  
         return IFuture.DONE;
     }
     
     /**
-     *  Pickup a treasure.
+     *  Pickup a resource.
      *  Only works, when at the location.
-     *  @param treasure The treasure to be picked up.
+     *  @param resource The resource to be picked up.
      *  @return A future that is finished, when the pick up operation is completed, i.e. failed or succeeded.
      */
-    public IFuture<Void>    pickUp(Resource resource)
+    public IFuture<Void>    pickUp(Resource resource, AgentTypes type)
     {
         Future<Void>    ret = new Future<Void>();
         if(resources.contains(resource))
         {
-            if(isAtLocation(resource.location))
+            if(isAtLocation(resource.location, type))
             {
                 resources.remove(resource);
                 collected.add(resource);
@@ -220,7 +193,7 @@ public class Environment implements Closeable{
             }
             else
             {
-                ret.setException(new IllegalArgumentException("Agent "+agentLocation+" not at resource location "+resource.location+"."));
+                ret.setException(new IllegalArgumentException("Agent "+agentsLocation+" not at resource location "+resource.location+"."));
             }
         }
         else
@@ -242,11 +215,12 @@ public class Environment implements Closeable{
     }
     
     /**
-     *  Check if the hunter is at (i.e. close enough to) a given location.
+     *  Check if the agent is at (i.e. close enough to) a given location.
      */
-    public boolean  isAtLocation(Point2D location)
+    public boolean  isAtLocation(Point2D location, AgentTypes type)
     {
-        return Math.abs(this.agentLocation.getX()-location.getX())<0.0001 && Math.abs(this.agentLocation.getY()-location.getY())<0.0001;
+        return Math.abs(this.agentsLocation.get(type).getX()-location.getX())<0.0001
+                && Math.abs(this.agentsLocation.get(type).getY()-location.getY())<0.0001;
     }
     
     //-------- Closeable interface --------
@@ -266,5 +240,4 @@ public class Environment implements Closeable{
             }
         });
     }
-
 }

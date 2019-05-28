@@ -17,9 +17,11 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIDefaults;
 
 import jadex.commons.gui.SGUI;
+import upc.masd.AgentTypes;
 
 /**
- *  Panel for showing the treasure hunter world view.
+ * Created on: May 26, 2019
+ * @author santiagobernal
  */
 class EnvironmentPanel extends JPanel
 {
@@ -41,7 +43,7 @@ class EnvironmentPanel extends JPanel
 
 	//-------- attributes --------
 		
-	/** The treasure hunter environment. */
+	/** The environment. */
 	protected Environment	env;
 	
 	/** The paint-in-progress flag. */
@@ -118,15 +120,15 @@ class EnvironmentPanel extends JPanel
 			paintIcon("collected", new Rectangle2D.Double(p.getX()-0.05, p.getY()-0.05, 0.1, 0.1), g2);
 		}
 		
-		// Paint treasures.
+		// Paint resources.
 		for(Resource t: env.getResources())
 		{
 			Point2D	p	= t.location;
 			paintIcon("resource", new Rectangle2D.Double(p.getX()-0.05, p.getY()-0.05, 0.1, 0.1), g2);
 		}
 		
-		// Paint the treasure hunter.
-		Point2D	p	= env.agentLocation;
+		// Paint the gatherer agent.
+		Point2D	p	= env.getAgentLocation(AgentTypes.GATHERER);
 		paintIcon("agent", new Rectangle2D.Double(p.getX()-0.05, p.getY()-0.05, 0.1, 0.1), g2);
 		
 		g.drawImage(img, 0, 0, this);

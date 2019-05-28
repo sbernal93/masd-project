@@ -4,6 +4,7 @@ import jadex.base.IPlatformConfiguration;
 import jadex.base.PlatformConfigurationHandler;
 import jadex.base.Starter;
 import jadex.micro.annotation.Configurations;
+import upc.masd.gatherer.GathererAgent;
 
 /**
  * Created on: May 28, 2019
@@ -16,7 +17,7 @@ public class Main {
         config.setValue("kernel_component", true);
         config.setValue("kernel_bdiv3", true);
 //      config.getRootConfig().setLogging(true);
-        config.addComponent(TestAgent.class);
+        config.addComponent(GathererAgent.class);
         Starter.createPlatform(config).get();
     }
 }

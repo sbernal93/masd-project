@@ -5,7 +5,7 @@ import java.util.Random;
 
 
 /**
- * Created on: May 28, 2019
+ * Created on: May 26, 2019
  * @author santiagobernal
  */
 public class Resource {
