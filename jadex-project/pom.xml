@@ -6,7 +6,8 @@
   
   	<properties>
 		<!-- Specify desired Jadex version here. -->
-		<jadex.version>4.0.164</jadex.version>
+		  <jadex.version>4.0.164</jadex.version>
+		<!-- <jadex.version>3.0.115</jadex.version> -->
 	</properties>
 	
 	<!-- Additional repositories (only required when using nightlies and/or pro version of Jadex). -->
