@@ -37,6 +37,7 @@ class EnvironmentPanel extends JPanel
 		"background", SGUI.makeIcon(EnvironmentPanel.class, "images/grass.jpg"),
         "resource", SGUI.makeIcon(EnvironmentPanel.class, "images/ore.png"),
         "agent", SGUI.makeIcon(EnvironmentPanel.class, "images/miner2.png"),
+        "spy", SGUI.makeIcon(EnvironmentPanel.class, "images/spy.png"),
         "collected", SGUI.makeIcon(EnvironmentPanel.class, "images/flag.png"),
         "base", SGUI.makeIcon(EnvironmentPanel.class, "images/castle.png")
 	});
@@ -130,6 +131,9 @@ class EnvironmentPanel extends JPanel
 		// Paint the gatherer agent.
 		Point2D	p	= env.getAgentLocation(AgentTypes.GATHERER);
 		paintIcon("agent", new Rectangle2D.Double(p.getX()-0.05, p.getY()-0.05, 0.1, 0.1), g2);
+
+        p   = env.getAgentLocation(AgentTypes.SPY);
+        paintIcon("spy", new Rectangle2D.Double(p.getX()-0.05, p.getY()-0.05, 0.1, 0.1), g2);
 		
 		g.drawImage(img, 0, 0, this);
 	}

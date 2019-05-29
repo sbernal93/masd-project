@@ -13,6 +13,7 @@ import jadex.bdiv3.annotation.Plans;
 import jadex.bdiv3.annotation.Trigger;
 import jadex.bdiv3.features.IBDIAgentFeature;
 import jadex.bridge.IInternalAccess;
+import jadex.bridge.service.annotation.Service;
 import jadex.commons.future.Future;
 import jadex.commons.future.IFuture;
 import jadex.micro.annotation.Agent;
@@ -27,6 +28,7 @@ import upc.masd.movement.WalkAroundPlan;
  * @author santiagobernal
  */
 @Agent(type=BDIAgentFactory.TYPE)
+@Service
 @Plans({
     @Plan(trigger=@Trigger(goals={BaseMovingAgent.WalkAroundGoal.class}),
             body=@Body(WalkAroundPlan.class))

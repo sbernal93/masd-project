@@ -13,7 +13,13 @@ import jadex.bdiv3.annotation.GoalDropCondition;
 import jadex.bdiv3.annotation.Plan;
 import jadex.bdiv3.annotation.Plans;
 import jadex.bdiv3.annotation.Trigger;
+import jadex.bridge.service.annotation.Reference;
+import jadex.bridge.service.annotation.Service;
+import jadex.commons.future.IFuture;
 import jadex.micro.annotation.Agent;
+import jadex.micro.annotation.Implementation;
+import jadex.micro.annotation.ProvidedService;
+import jadex.micro.annotation.ProvidedServices;
 import upc.masd.AgentTypes;
 import upc.masd.BaseMovingAgent;
 import upc.masd.environment.Resource;
@@ -23,11 +29,13 @@ import upc.masd.environment.Resource;
  * @author santiagobernal
  */
 @Agent(type=BDIAgentFactory.TYPE)
+@Service
+@ProvidedServices(@ProvidedService(type=IGatherService.class, implementation=@Implementation(value=GathererAgent.class)))
 @Plans({
     @Plan(trigger=@Trigger(goals=GathererAgent.CollectResourceGoal.class),
             body=@Body(CollectResourcePlan.class))
 })
-public class GathererAgent extends BaseMovingAgent {
+public class GathererAgent extends BaseMovingAgent implements IGatherService {
     
     
     @Belief
@@ -81,8 +89,12 @@ public class GathererAgent extends BaseMovingAgent {
         public GathererAgent getOuter() {
             return outer;
         }
-        
-        
+    }
+    
+    public IFuture<Void> doGather(@Reference Resource resource){
+        System.out.println("Got message");
+        this.view.add(resource);
+        return IFuture.DONE;
     }
 
 
